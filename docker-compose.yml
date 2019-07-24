@@ -81,7 +81,7 @@ services:
     networks:
       - net-es
 
-  hypernova:
+  node:
     build: ./node/
     command: node ./server/index.js
     container_name: hypernova
