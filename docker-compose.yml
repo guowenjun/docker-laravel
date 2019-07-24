@@ -1,0 +1,103 @@
+version: "3"
+
+
+services:
+
+  nginx:
+    image: nginx:1.14.0
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx
+      - ./www:/usr/share/nginx/html
+      - ./nginx/log:/var/log/nginx
+    networks:
+      - net-php
+
+  php:
+    build: ./php7/
+    container_name: php
+    expose:
+      - "9000"
+    volumes:
+      - ./www:/usr/share/nginx/html
+      - ./php7/conf/php/php.ini:/usr/local/etc/php/php.ini
+      - ./php7/conf/php-fpm.d:/usr/local/etc/php-fpm.d
+      - ./php7/log:/var/log/php
+    networks:
+      - net-php
+      - net-mariadb
+      - net-redis
+      - net-node
+      - net-es
+
+   mariadb:
+     image: mariadb:10.3.8
+     container_name: mariadb
+     ports:
+       - "3306:3306"
+     volumes:
+       - ./mariadb/data:/var/lib/mysql
+       - ./mariadb/conf:/etc/mysql
+       - ./mariadb/log:/var/log/mysql
+     networks:
+       - net-mariadb
+     environment:
+       - MYSQL_ROOT_PASSWORD=yzCQNekAtjU8wFiunRwqHtWoGq6cwe
+       - LANG=C.UTF-8
+
+  redis:
+    image: redis:4.0.10
+    container_name: redis
+    networks:
+      - net-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+
+  elasticsearch:
+    image:  elasticsearch:6.5.4
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./es/data:/usr/share/elasticsearch/data:rw
+      - ./es/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./es/logs:/user/share/elasticsearch/logs:rw
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - net-es
+
+  hypernova:
+    build: ./node/
+    command: node ./server/index.js
+    container_name: hypernova
+    working_dir: /usr/src/app
+    expose:
+      - "3030"
+    volumes:
+      - ./www/front:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - net-node
+
+
+networks:
+  net-php:
+  net-mariadb:
+  net-redis:
+  net-node:
+  net-es:
