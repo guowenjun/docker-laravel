@@ -1,0 +1,18 @@
+cluster.name: es-cluster
+node.name: es-master
+node.master: true
+node.data: true
+
+network.host: 0.0.0.0
+http.port: 9200
+transport.tcp.port: 9300
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.enabled: true
+
+discovery.zen.minimum_master_nodes: 1
+discovery.zen.ping_timeout: 5s
+
+bootstrap.memory_lock: true
+action.destructive_requires_name: true
+xpack.security.audit.enabled: true

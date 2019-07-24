@@ -1,0 +1,2 @@
+0 1,13,17 * * * /usr/local/bin/php /usr/share/nginx/html/gaea/artisan dashboard
+* * * * * /usr/local/bin/php /usr/share/nginx/html/gaea/artisan sendemail >> /var/log/cron.log
